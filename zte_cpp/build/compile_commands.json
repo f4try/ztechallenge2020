@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/Users/zon/Documents/zte_cpp/build",
+  "command": "/usr/bin/clang++    -g -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX10.14.sdk   -std=gnu++2a -o CMakeFiles/zte_cpp.dir/main.cpp.o -c /Users/zon/Documents/zte_cpp/main.cpp",
+  "file": "/Users/zon/Documents/zte_cpp/main.cpp"
+}
+]

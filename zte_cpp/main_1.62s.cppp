@@ -1,0 +1,267 @@
+
+// #include <bits/stdc++.h>
+#include <stdlib.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<fcntl.h>
+#include <vector>
+#include <unordered_map>
+#include <string>
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <set>
+#include <algorithm>
+#include <functional>
+#include <string>
+using namespace std;
+
+using UI = unsigned int;
+using USI = unsigned short int;
+unordered_map<UI, vector<UI> > data, data_;
+
+USI loop(14),cut_n(3);
+
+int helper[5000];
+
+USI d[5000], path[14];
+
+USI res0[0];
+USI res1[50000*4];
+USI res2[0];
+USI res3[100000*6];
+USI res4[0];
+USI res5[500000*8];
+USI res6[0];
+USI res7[5000000*10];
+USI res8[0];
+USI res9[100000000*12];
+USI res10[0];
+USI res11[10000000000*14];
+USI *res[] = {res0, res1, res2, res3, res4,res5, res6, res7, res8, res9, res10, res11};
+
+UI pd,p[12] = {0};
+USI n_a(0),n_b(0);
+
+clock_t t[5];
+
+string infile = "/Users/zon/Documents/zte_cpp/zte_cpp/Example10.csv";
+string outfile = "/Users/zon/Documents/zte_cpp/zte_cpp/result.txt";
+
+std::string to_string_(int value) {
+
+	static const char digits[19] = {
+		'9','8','7','6','5','4','3','2','1','0',
+		'1','2','3','4','5','6','7','8','9'
+	};
+	static const char* zero = digits + 9;//zero->'0'
+
+	char buf[24];      
+	int i = value;
+	char *p = buf + 24;
+	*--p = '\0' ;
+	do {
+		int lsd = i % 10;
+		i /= 10;
+		*--p = zero[lsd];
+	} while (i != 0);
+	if (value <0)
+		*--p = '-';
+	return std::string(p);
+}
+
+//inline void file2matrix(){
+//    UI u, v, _;
+//    while(~scanf("%u,%u,%u", &u, &v, &_)){
+//        data[u].push_back(v);
+//        data_[v].push_back(u);
+//    }
+//
+//}
+inline void file2matrix(){
+    ifstream inFile(infile,ios::in);//inFile来自fstream,ifstream为输入文件流(从文件读入)
+    string lineStr;
+    vector<vector<string> > strArray;
+    unordered_map<UI,vector<UI> > p_a;
+    int i(0),j(0);
+//    getline(inFile,lineStr);
+//    cout<<lineStr;
+    while(getline(inFile,lineStr)) //getline来自sstream
+    {
+        //打印整行字符串
+//        cout<<lineStr<<endl;
+        //存成二维表结构
+        stringstream ss(lineStr);//来自sstream
+        string str;
+        vector<string> lineArray;
+        //按照逗号分隔
+        j = 0;
+        while (getline(ss, str, ',')) {
+            if (str == "1" || str == "1\r")
+//                cout << str;
+                p_a[i].push_back(j);
+//            lineArray.push_back(str);//一行数据以vector保存
+            j++;
+        }
+        n_b=j;
+        //cout<<lineArray[0]<<endl;
+//        strArray.push_back(lineArray);//每一行vector数据都放到strArray中去
+        i++;
+    }
+    n_a = i;
+//    cout<<n_b;
+    vector<UI>::iterator iter;
+    for(i = 0;i<n_a;i++){
+        iter = p_a[i].begin();
+        while (iter!=p_a[i].end()){
+            data[i].push_back(*iter + n_a);
+            data[*iter + n_a].push_back(i);
+            data_[i].push_back(*iter + n_a);
+            data_[*iter + n_a].push_back(i);
+            iter++;
+        }
+    }
+}
+inline void cut(){
+    auto iter = data.begin();
+    while(iter != data.end()){
+        if(data_.count(iter->first)){
+            d[pd] = iter->first;
+            sort(iter->second.begin(), iter->second.end());
+            ++iter;
+            pd ++;
+        }
+        else{
+            data.erase(iter++);
+        }
+    }
+}
+
+void search_helper(UI k, UI  key, UI cnt){
+    for(auto val: data_[k]){
+        if(data.count(val)){
+            helper[val] = key;
+            if(cnt == cut_n) continue;
+            search_helper(val, key, cnt + 1);
+        }
+        else continue;
+
+    }
+}
+
+void search_circle(USI path[], int cnt){
+    if(data.count(path[cnt-1])){
+        for(auto& item: data[path[cnt-1]]){
+
+            if(cnt > loop-1-cut_n && (helper[item] != path[0] && helper[item] != -path[0]-1)) continue;
+            bool flag = false;
+            if (cnt > 1){
+                for(int i = 0; i < cnt-1; ++i)
+                    if(path[i] == item){
+                        flag = true;
+                        break;
+                }
+            }
+            if(flag) continue;
+            if(cnt > 1 && helper[item] == -path[0]-1){
+                path[cnt] = item;
+                for(int i=0;i<=cnt;i++){
+                    res[cnt-2][(cnt+1)*p[cnt-2]+i] = path[i];
+                }
+                p[cnt-2]++;
+//                cout<<cnt+1<<":"<<p[cnt-2]<<endl;
+            }
+            if(cnt == loop-1) continue;
+
+            path[cnt] = item;
+            search_circle(path, cnt + 1);
+        }
+    }
+    else return;
+}
+
+void output(string &outputFile) {
+
+//    int Num = p[0] + p[1] + p[2] + p[3] + p[4] + p[5] + p[6] + p[7] + p[8] + p[9];
+    FILE *fp = fopen(outputFile.c_str(), "w");
+//    string str = to_string(Num) + "\n";
+    string str = "Result:\n";
+//    UI res0[1000000000*14];
+//    UI result[12];
+//    for (USI i = 4; i <= loop; i+=2) {
+//        cout<<"Clear duplicates for circles with "<<i<<" items.It may take long time.Please waiting..."<<endl;
+//        set<string> lines;
+//        string line="";
+//        for (UI j = 0; j < i*p[i-3]; ++j) {
+//            if(j%i==0){
+//                sort(res[i-3]+j,res[i-3]+j+i,less<int16_t>());
+//                line="";
+//            }
+//            if((j%i)!=(i-1))
+//                line += to_string_(res[i-3][j])+",";
+//            else{
+//                line += to_string_(res[i-3][j])+"\n";
+////                str+=line;
+//                lines.insert(line);
+//            }
+//        }
+//        p[i-3]=UI(lines.size());
+//        cout<<"The number of circles with "<<i<<" items is "<<p[i-3]<<endl;
+//    }
+    for (USI i = 4; i <= loop; i+=2) {
+        str+=to_string(i)+":"+to_string(p[i-3])+"\n";
+    }
+    const char *p = str.c_str();
+    fwrite(p, strlen(p), 1, fp);
+    fclose(fp);
+}
+
+int main(int argc, char** argv){
+    cout<<"Use ./main.exe [[number_of_loops] data_file_name]"<<endl;
+    cout<<"Default number_of_loops is 14"<<endl;
+    cout<<"eg1:"<<"./main.exe"<<endl;
+    cout<<"eg2:"<<"./main.exe 10 "<<endl;
+    cout<<"eg3:"<<"./main.exe 12 Example6.csv"<<endl;
+    if(argc>1){
+        loop = USI(atoi(argv[1]));
+    }
+    if(argc>2){
+        infile = argv[2];
+    }
+    t[0] = clock();
+//    freopen(infile, "r", stdin);
+    cout<<"CSV data reading..."<<endl;
+    file2matrix();
+    t[1] = clock();
+    cout<<"Time used:"<<float(t[1]-t[0])/CLOCKS_PER_SEC<<"s"<<endl;
+    cout<<"Cuting blank rows and columns..."<<endl;
+    cut();
+    t[2] = clock();
+    cout<<"Time used:"<<float(t[2]-t[0])/CLOCKS_PER_SEC<<"s"<<endl;
+    cout<<"Searching circles...It may take long time at the begining.Please waiting..."<<endl;
+    sort(d, d+pd);
+    
+    for(int i = 0; i < n_a; i++){
+        cout<<"Searching circles:"<<float(100*i)/n_a<<"%"<<endl;
+        search_helper(d[i], d[i], 1);
+        for(auto item: data_[d[i]]){
+            if(data.count(item))
+                helper[item] = -d[i]-1;
+        }
+        path[0] = d[i];
+        search_circle(path, 1);
+
+        data.erase(d[i]);
+    }
+    cout<<"Searching circle..."<<"100%"<<endl;
+    t[3] = clock();
+    cout<<"Time used:"<<float(t[3]-t[0])/CLOCKS_PER_SEC<<"s"<<endl;
+    cout<<"Clear duplicates..."<<endl;
+    output(outfile);
+    t[4] = clock();
+    cout<<"Done! Results are saved in ./result.txt"<<endl;
+    cout<<"Total time used:"<<float(t[4]-t[0])/CLOCKS_PER_SEC<<"s"<<endl;
+
+    return 0;
+}

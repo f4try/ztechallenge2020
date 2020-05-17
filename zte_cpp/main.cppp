@@ -1,0 +1,201 @@
+
+//#include <bits/stdc++.h>
+#include <stdlib.h>
+#include<unistd.h>
+#include<sys/types.h>
+#include<sys/stat.h>
+#include<fcntl.h>
+#include <vector>
+#include <unordered_map>
+#include <string>
+#include <fstream>
+#include<iostream>
+#include <sstream>
+using namespace std;
+
+using UI = unsigned int;
+unordered_map<UI, vector<UI> > map_record;
+unordered_map<int,int> result;
+UI loop_n(8);
+UI cut_n(4);
+int helper[3000];
+int n_a(0),n_b(0);
+//int pd(0);
+//int p[14] = {0};
+
+
+//UI res0[500000*3];
+//UI res1[500000*4];
+//UI res2[1000000*5];
+//UI res3[2000000*6];
+//UI res4[3000000*7];
+//UI *res[] = {res0, res1, res2, res3, res4};
+//static const char *infile = "./Example0.csv";
+//string outfile = "./result.txt";
+
+
+inline void file2matrix(){
+    ifstream inFile("/Users/zon/Documents/zte_cpp/zte_cpp/Example0.csv",ios::in);//inFile来自fstream,ifstream为输入文件流(从文件读入)
+    string lineStr;
+    vector<vector<string> > strArray;
+    unordered_map<UI,vector<UI> > p_a;
+    int i(0),j(0);
+//    getline(inFile,lineStr);
+//    cout<<lineStr;
+    while(getline(inFile,lineStr)) //getline来自sstream
+    {
+        //打印整行字符串
+//        cout<<lineStr<<endl;
+        //存成二维表结构
+        stringstream ss(lineStr);//来自sstream
+        string str;
+        vector<string> lineArray;
+        //按照逗号分隔
+        j = 0;
+        while (getline(ss, str, ',')) {
+            if (str == "1" || str == "1\r")
+//                cout << str;
+                p_a[i].push_back(j);
+//            lineArray.push_back(str);//一行数据以vector保存
+            j++;
+        }
+        n_b=j;
+        //cout<<lineArray[0]<<endl;
+//        strArray.push_back(lineArray);//每一行vector数据都放到strArray中去
+        i++;
+    }
+    n_a = i;
+//    cout<<n_b;
+    vector<UI>::iterator iter;
+    for(i = 0;i<n_a;i++){
+        iter = p_a[i].begin();
+        while (iter!=p_a[i].end()){
+            map_record[i].push_back(*iter + n_a);
+            map_record[*iter + n_a].push_back(i);
+            iter++;
+        }
+    }
+}
+
+inline void cut(){
+    auto iter = map_record.begin();
+    while(iter != map_record.end()){
+//            d[pd] = iter->first;
+            sort(iter->second.begin(), iter->second.end());
+            ++iter;
+//            pd ++;
+    }
+}
+
+void search_helper(UI k, UI  key, UI cnt){
+    for(auto val: map_record[k]){
+        if(map_record.count(val)){
+            helper[val] = key;
+            if(cnt == cut_n) continue;
+            search_helper(val, key, cnt + 1);
+        }
+        else continue;
+
+    }
+}
+
+void search_circle(vector<int> path, int cnt){
+    int node = path.back();
+    if(map_record.count(node)){
+        for(auto& item: map_record[node]){
+
+            if(cnt > loop_n-cut_n && (helper[item] != path[0] && helper[item] != -path[0]-1)) continue;
+            bool flag = false;
+            if (cnt > 1){
+                for(int i = 0; i < cnt-1; ++i)
+                    if(path[i] == item){
+                        flag = true;
+                        break;
+                }
+            }
+            if(flag) continue;
+//            if(cnt>1){
+////                for(int i=cnt%2;i<cnt;i+=2){
+//                    if(item<path[cnt-2]){
+//                        flag = true;
+////                        break;
+//                    }
+////                }
+//            }
+//            if(flag) continue;
+            if(item>path[0]){
+//                if(cnt > 1 && helper[item] == -path[0]-1 && item>path[1]){
+                if(cnt > 1 && helper[item] == -path[0]-1){
+                    path[cnt] = item;
+    //                for(int i=0;i<=cnt;i++)
+    //                    res[cnt-2][(cnt+1)*p[cnt-2]+i] = path[i];
+    //                p[cnt-2]++;
+                    result[cnt+1]+=1;
+//                    for(int i=0; i<cnt+1;i++ ){
+//                        cout<<path[i]<<",";
+//                    }
+//                    cout<<endl;
+                }
+                if(cnt >= loop_n) continue;
+                path.push_back(item);
+//                path[cnt] = item;
+                search_circle(path, cnt+1);
+            }
+        }
+    }
+    else return;
+}
+
+void output() {
+    for(int i=4;i<loop_n+1;i+=2){
+        cout<<i<<":"<< result[i]<<endl;
+    }
+}
+
+int main(){
+
+
+    clock_t t[5];
+    t[0] = clock();
+
+    for(int i=4;i<loop_n+1;i+=2){
+        result[i] = 0;
+    }
+
+//    freopen(infile, "r", stdin);
+
+    file2matrix();
+
+    t[1] = clock();
+    printf("%f\n", (double)(t[1]-t[0])/CLOCKS_PER_SEC);
+    cut();
+    t[2] = clock();
+//    sort(d, d+pd);
+    printf("%f\n", (double)(t[2]-t[0])/CLOCKS_PER_SEC);
+    for(int i = 0; i < n_a; i++){
+        t[2] = clock();
+        search_helper(i, i, 1);
+        for(auto item: map_record[i]){
+            if(map_record.count(item))
+                helper[item] = -i-1;
+        }
+        vector<int> path;
+        path.push_back(i);
+        search_circle(path, 1);
+
+//        map_record.erase(i);
+        cout<<i<<endl;
+        t[3] = clock();
+        printf("%f\n", (double)(t[3]-t[2])/CLOCKS_PER_SEC);
+    }
+    t[3] = clock();
+    printf("%f\n", (double)(t[3]-t[0])/CLOCKS_PER_SEC);
+    output();
+    t[4] = clock();
+
+
+
+    printf("%f\n", (double)(t[4]-t[0])/CLOCKS_PER_SEC);
+
+    return 0;
+}

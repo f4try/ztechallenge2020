@@ -1,3 +1,4 @@
 *.csv linguist-language=cpp
 *.xml linguist-language=cpp
 *.tlog linguist-language=cpp
+* linguist-language=cpp

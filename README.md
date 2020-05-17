@@ -28,4 +28,4 @@ zte_cpp文件夹是c++代码和数组集，zte_py是python代码速度较慢，r
 使用i5-3210M笔记本进行测试，配置比较低。
 第一阶段测试完美通过耗时54.008s。
 第二阶段12环在测试完美通过，耗时91.586s。
-使用macbook pro 2.5GHz i5 16G内存 10.14.6Mojave系统进行测试，使用g++ -std=c++11 -O3 zte_mac.cpp -o zte_mac编译，./zte_mac运行，测试14环第二阶段耗时1617.65s，时间略长，得分100分。
+使用macbook进行测试，使用g++ -std=c++11 -O3 zte_mac.cpp -o zte_mac编译，./zte_mac运行，测试14环第二阶段耗时1617.65s，时间略长，得分100分。
